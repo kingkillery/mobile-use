@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     GOOGLE_API_KEY: SecretStr | None = None
     XAI_API_KEY: SecretStr | None = None
     OPEN_ROUTER_API_KEY: SecretStr | None = None
+    LLM_API_KEY: SecretStr | None = None
     MINITAP_API_KEY: SecretStr | None = None
 
     OPENAI_BASE_URL: str | None = None
@@ -96,7 +97,7 @@ def record_events(output_path: Path | None, events: list[str] | BaseModel | Any)
 
 ### LLM Configuration
 
-LLMProvider = Literal["openai", "google", "openrouter", "xai", "vertexai", "minitap"]
+LLMProvider = Literal["openai", "google", "openrouter", "xai", "vertexai", "minitap", "llm"]
 LLMUtilsNode = Literal["outputter", "hopper", "video_analyzer"]
 LLMUtilsNodeWithFallback = LLMUtilsNode
 AgentNode = Literal[
@@ -141,6 +142,11 @@ class LLM(BaseModel):
             case "openrouter":
                 if not settings.OPEN_ROUTER_API_KEY:
                     raise Exception(f"{name} requires OPEN_ROUTER_API_KEY in .env")
+            case "llm":
+                if not (settings.LLM_API_KEY or settings.OPEN_ROUTER_API_KEY):
+                    raise Exception(
+                        f"{name} requires LLM_API_KEY or OPEN_ROUTER_API_KEY in .env"
+                    )
             case "xai":
                 if not settings.XAI_API_KEY:
                     raise Exception(f"{name} requires XAI_API_KEY in .env")

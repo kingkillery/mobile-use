@@ -1,13 +1,16 @@
 import asyncio
 import logging
+import os
+import subprocess
+from dataclasses import dataclass
 from collections.abc import Awaitable, Callable, Coroutine
 from typing import Any, Literal, TypeVar, overload
 
-from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import BaseMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_google_vertexai import ChatVertexAI
 from langchain_openai import ChatOpenAI
-from pydantic import SecretStr
+from pydantic import BaseModel, SecretStr
 
 from minitap.mobile_use.config import (
     AgentNode,
@@ -24,6 +27,140 @@ from minitap.mobile_use.utils.logger import get_logger
 llm_logger = logging.getLogger(__name__)
 # Logger for user messages
 user_messages_logger = get_logger(__name__)
+
+
+@dataclass
+class _LLMResponse:
+    content: str
+
+
+class _LLMBridge:
+    """Minimal BaseChatModel-compatible adapter backed by simonw/llm."""
+
+    def __init__(self, model_name: str, temperature: float = 1, api_key: str | None = None):
+        self.model_name = model_name
+        self.temperature = temperature
+        self.api_key = api_key
+
+    def with_structured_output(self, schema, *_, **__) -> "_LLMBridgeStructured":
+        return _LLMBridgeStructured(self, schema)
+
+    async def ainvoke(self, messages: list[BaseMessage] | list[dict] | list[str], **kwargs: Any):
+        return await asyncio.to_thread(self._invoke_sync, messages)
+
+    def _invoke_sync(self, messages: list[BaseMessage] | list[dict] | list[str]) -> _LLMResponse:
+        prompt = _render_messages(messages)
+
+        try:
+            return _LLMResponse(content=_call_llm_python_api(self.model_name, self.api_key, prompt))
+        except Exception as e:
+            raise RuntimeError(f"llm API invocation failed: {e}") from e
+
+
+class _LLMBridgeStructured:
+    def __init__(self, base: _LLMBridge, schema):
+        self.base = base
+        self.schema = schema
+
+    async def ainvoke(self, messages: list[BaseMessage] | list[dict] | list[str], **kwargs: Any):
+        response = await self.base.ainvoke(messages)
+        return _parse_structured_output(self.schema, response.content)
+
+    def with_structured_output(self, schema, *_, **__) -> "_LLMBridgeStructured":
+        return _LLMBridgeStructured(self.base, schema)
+
+
+def _render_messages(messages: list[BaseMessage] | list[dict] | list[str]) -> str:
+    if not messages:
+        return ""
+
+    parts: list[str] = []
+    for msg in messages:
+        if isinstance(msg, str):
+            parts.append(msg)
+            continue
+
+        content = getattr(msg, "content", msg)
+
+        if isinstance(content, str):
+            parts.append(content)
+            continue
+
+        if isinstance(content, list):
+            text_parts: list[str] = []
+            for chunk in content:
+                if isinstance(chunk, str):
+                    text_parts.append(chunk)
+                elif isinstance(chunk, dict):
+                    if chunk.get("type") == "text":
+                        text = str(chunk.get("text", "")).strip()
+                        if text:
+                            text_parts.append(text)
+                    else:
+                        text_parts.append(f"[{chunk.get('type', 'non-text')} attachment]")
+            if text_parts:
+                parts.append(" ".join(text_parts))
+            continue
+
+        parts.append(str(content))
+
+    return "\n\n".join(part for part in parts if part)
+
+
+def _call_llm_python_api(model_name: str, api_key: str | None, prompt: str) -> str:
+    if not prompt:
+        return ""
+
+    try:
+        import llm  # type: ignore
+
+        if api_key is not None:
+            os.environ["LLM_API_KEY"] = api_key
+
+        model = llm.get_model(model_name)
+        response = model.prompt(prompt)
+        if hasattr(response, "text"):
+            text = response.text()
+            return text if isinstance(text, str) else str(text)
+        return str(response)
+    except Exception:
+        return _call_llm_cli(model_name, api_key, prompt)
+
+
+def _call_llm_cli(model_name: str, api_key: str | None, prompt: str) -> str:
+    env = os.environ.copy()
+    if api_key is not None:
+        env["LLM_API_KEY"] = api_key
+
+    proc = subprocess.run(
+        ["llm", "-m", model_name, prompt],
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(f"llm command failed with code {proc.returncode}: {proc.stderr.strip()}")
+    return proc.stdout.strip()
+
+
+def _parse_structured_output(schema, raw: str):
+    text = (raw or "").strip()
+    if not text:
+        raise RuntimeError("llm returned empty response")
+
+    if not isinstance(schema, type) or not issubclass(schema, BaseModel):
+        return text
+
+    try:
+        return schema.model_validate_json(text)
+    except Exception as e:
+        try:
+            import json
+
+            return schema.model_validate(json.loads(text))
+        except Exception as parse_error:
+            raise RuntimeError(f"Failed to parse structured output: {parse_error}") from e
 
 
 async def invoke_llm_with_timeout_message[T](
@@ -159,6 +296,15 @@ def get_openrouter_llm(model_name: str, temperature: float = 1):
     return client
 
 
+def get_llm_api(model_name: str, temperature: float = 1) -> _LLMBridge:
+    api_key = None
+    if settings.LLM_API_KEY:
+        api_key = settings.LLM_API_KEY.get_secret_value()
+    elif settings.OPEN_ROUTER_API_KEY:
+        api_key = settings.OPEN_ROUTER_API_KEY.get_secret_value()
+    return _LLMBridge(model_name=model_name, temperature=temperature, api_key=api_key)
+
+
 def get_grok_llm(model_name: str, temperature: float = 1) -> ChatOpenAI:
     assert settings.XAI_API_KEY is not None
     client = ChatOpenAI(
@@ -177,7 +323,7 @@ def get_llm(
     *,
     use_fallback: bool = False,
     temperature: float = 1,
-) -> BaseChatModel: ...
+) -> Any: ...
 
 
 @overload
@@ -187,7 +333,7 @@ def get_llm(
     *,
     is_utils: Literal[True],
     temperature: float = 1,
-) -> BaseChatModel: ...
+) -> Any: ...
 
 
 @overload
@@ -198,7 +344,7 @@ def get_llm(
     is_utils: Literal[True],
     use_fallback: bool = False,
     temperature: float = 1,
-) -> BaseChatModel: ...
+) -> Any: ...
 
 
 def get_llm(
@@ -207,7 +353,7 @@ def get_llm(
     is_utils: bool = False,
     use_fallback: bool = False,
     temperature: float = 1,
-) -> BaseChatModel:
+) -> Any:
     llm = (
         ctx.llm_config.get_utils(name)  # type: ignore
         if is_utils
@@ -226,6 +372,8 @@ def get_llm(
         return get_vertex_llm(llm.model, temperature)
     elif llm.provider == "openrouter":
         return get_openrouter_llm(llm.model, temperature)
+    elif llm.provider == "llm":
+        return get_llm_api(llm.model, temperature)
     elif llm.provider == "xai":
         return get_grok_llm(llm.model, temperature)
     elif llm.provider == "minitap":

@@ -2,60 +2,60 @@
 {
   "default": {
     "planner": {
-      "provider": "openrouter",
+      "provider": "llm",
       "model": "deepseek/deepseek-v4-flash",
       "fallback": {
-        "provider": "openrouter",
+        "provider": "llm",
         "model": "deepseek/deepseek-v4-flash"
       }
     },
     "orchestrator": {
-      "provider": "openrouter",
+      "provider": "llm",
       "model": "deepseek/deepseek-v4-flash",
       "fallback": {
-        "provider": "openrouter",
+        "provider": "llm",
         "model": "deepseek/deepseek-v4-flash"
       }
     },
     "cortex": {
-      "provider": "openrouter",
+      "provider": "llm",
       "model": "deepseek/deepseek-v4-flash",
       "fallback": {
-        "provider": "openrouter",
+        "provider": "llm",
         "model": "deepseek/deepseek-v4-flash"
       }
     },
     "executor": {
-      "provider": "openrouter",
+      "provider": "llm",
       "model": "deepseek/deepseek-v4-flash",
       "fallback": {
-        "provider": "openrouter",
+        "provider": "llm",
         "model": "deepseek/deepseek-v4-flash"
       }
     },
     "contextor": {
-      "provider": "openrouter",
+      "provider": "llm",
       "model": "deepseek/deepseek-v4-flash",
       "fallback": {
-        "provider": "openrouter",
+        "provider": "llm",
         "model": "deepseek/deepseek-v4-flash"
       }
     },
     "utils": {
       "hopper": {
         // Needs at least a 256k context window.
-        "provider": "openrouter",
+        "provider": "llm",
         "model": "deepseek/deepseek-v4-flash",
         "fallback": {
-          "provider": "openrouter",
+          "provider": "llm",
           "model": "deepseek/deepseek-v4-flash"
         }
       },
       "outputter": {
-        "provider": "openrouter",
+        "provider": "llm",
         "model": "deepseek/deepseek-v4-flash",
         "fallback": {
-          "provider": "openrouter",
+          "provider": "llm",
           "model": "deepseek/deepseek-v4-flash"
         }
       }
