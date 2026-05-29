@@ -56,7 +56,7 @@ Showcases more advanced SDK features while remaining practical:
 
 - **Servers**: With default base URLs (`localhost:9998/9999`), the agent starts the servers automatically. When you override URLs, it assumes servers are already running.
 
-- **LLM API Keys**: Provide necessary keys (e.g., `OPENAI_API_KEY`) in a `.env` file at repo root; see `mobile_use/config.py`.
+- **LLM API Keys**: Provide necessary keys (e.g., `OPEN_ROUTER_API_KEY` for OpenRouter) in a `.env` file at repo root; see `mobile_use/config.py`.
 
 - **Traces**: When enabled, traces are saved to a specified directory (defaulting to `./mobile-use-traces/`) and can be useful for debugging and visualization.
 

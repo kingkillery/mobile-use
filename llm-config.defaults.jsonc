@@ -2,61 +2,61 @@
 {
   "default": {
     "planner": {
-      "provider": "openai",
-      "model": "gpt-5-nano",
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4-flash",
       "fallback": {
-        "provider": "openai",
-        "model": "gpt-5-mini"
+        "provider": "openrouter",
+        "model": "deepseek/deepseek-v4-flash"
       }
     },
     "orchestrator": {
-      "provider": "openai",
-      "model": "gpt-5-nano",
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4-flash",
       "fallback": {
-        "provider": "openai",
-        "model": "gpt-5-mini"
+        "provider": "openrouter",
+        "model": "deepseek/deepseek-v4-flash"
       }
     },
     "cortex": {
-      "provider": "openai",
-      "model": "gpt-5",
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4-flash",
       "fallback": {
-        "provider": "openai",
-        "model": "o4-mini"
+        "provider": "openrouter",
+        "model": "deepseek/deepseek-v4-flash"
       }
     },
     "executor": {
-      "provider": "openai",
-      "model": "gpt-5-nano",
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4-flash",
       "fallback": {
-        "provider": "openai",
-        "model": "gpt-5-mini"
+        "provider": "openrouter",
+        "model": "deepseek/deepseek-v4-flash"
       }
     },
     "contextor": {
-      "provider": "openai",
-      "model": "gpt-5-nano",
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4-flash",
       "fallback": {
-        "provider": "openai",
-        "model": "gpt-5-mini"
+        "provider": "openrouter",
+        "model": "deepseek/deepseek-v4-flash"
       }
     },
     "utils": {
       "hopper": {
         // Needs at least a 256k context window.
-        "provider": "openai",
-        "model": "gpt-5-nano",
+        "provider": "openrouter",
+        "model": "deepseek/deepseek-v4-flash",
         "fallback": {
-          "provider": "openai",
-          "model": "gpt-5-mini"
+          "provider": "openrouter",
+          "model": "deepseek/deepseek-v4-flash"
         }
       },
       "outputter": {
-        "provider": "openai",
-        "model": "gpt-5-nano",
+        "provider": "openrouter",
+        "model": "deepseek/deepseek-v4-flash",
         "fallback": {
-          "provider": "openai",
-          "model": "gpt-5-mini"
+          "provider": "openrouter",
+          "model": "deepseek/deepseek-v4-flash"
         }
       }
       // video_analyzer is optional - only needed when using video recording tools
