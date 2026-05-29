@@ -17,6 +17,7 @@ from minitap.mobile_use.constants import EXECUTOR_MESSAGES_KEY
 from minitap.mobile_use.context import MobileUseContext
 from minitap.mobile_use.controllers.controller_factory import create_device_controller
 from minitap.mobile_use.graph.state import State
+from minitap.mobile_use.skills.loader import build_agent_skill_appendix
 from minitap.mobile_use.services.llm import get_llm, invoke_llm_with_timeout_message, with_fallback
 from minitap.mobile_use.services.telemetry import telemetry
 from minitap.mobile_use.tools.index import (
@@ -53,6 +54,7 @@ class CortexNode:
 
         system_message = Template(
             Path(__file__).parent.joinpath("cortex.md").read_text(encoding="utf-8")
+            + build_agent_skill_appendix("cortex")
         ).render(
             platform=self.ctx.device.mobile_platform.value,
             initial_goal=state.initial_goal,

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "android_settings_battery_001",
+    "platform": "android",
+    "goal": "Open Settings and report the current battery level.",
+    "locked_app_package": "com.android.settings",
+    "reset_command": "powershell -File benchmarks/mobileuse/resets/reset_settings.ps1",
+    "verifier_command": "uv run python benchmarks/mobileuse/verifiers/android_settings.py --expected battery",
+    "timeout_seconds": 180,
+    "max_steps": 80
+  },
+  {
+    "id": "android_settings_wifi_001",
+    "platform": "android",
+    "goal": "Open Settings and open the Wi-Fi page.",
+    "locked_app_package": "com.android.settings",
+    "reset_command": "powershell -File benchmarks/mobileuse/resets/reset_settings.ps1",
+    "verifier_command": "uv run python benchmarks/mobileuse/verifiers/android_settings.py --expected wifi",
+    "timeout_seconds": 180,
+    "max_steps": 80
+  },
+  {
+    "id": "android_settings_storage_001",
+    "platform": "android",
+    "goal": "Open Settings and open the storage page.",
+    "locked_app_package": "com.android.settings",
+    "reset_command": "powershell -File benchmarks/mobileuse/resets/reset_settings.ps1",
+    "verifier_command": "uv run python benchmarks/mobileuse/verifiers/android_settings.py --expected storage",
+    "timeout_seconds": 180,
+    "max_steps": 80
+  },
+  {
+    "id": "android_calculator_addition_001",
+    "platform": "android",
+    "goal": "Open Calculator and compute 7 + 8.",
+    "locked_app_package": "com.google.android.calculator",
+    "reset_command": "powershell -File benchmarks/mobileuse/resets/reset_calculator.ps1",
+    "verifier_command": "uv run python benchmarks/mobileuse/verifiers/android_calculator.py 15",
+    "timeout_seconds": 120,
+    "max_steps": 80
+  },
+  {
+    "id": "android_clock_timer_001",
+    "platform": "android",
+    "goal": "Open Clock and show the timers screen.",
+    "locked_app_package": "com.google.android.deskclock",
+    "reset_command": "powershell -File benchmarks/mobileuse/resets/reset_settings.ps1",
+    "verifier_command": "uv run python benchmarks/mobileuse/verifiers/android_settings.py --expected clock",
+    "timeout_seconds": 180,
+    "max_steps": 80
+  }
+]

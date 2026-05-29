@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     ADB_PORT: int | None = None
 
     MOBILE_USE_TELEMETRY_ENABLED: bool | None = None
+    MOBILE_USE_SKILL_PATH: str | None = None
+    MOBILE_USE_SKILL_TARGETS: str | None = None
 
     PROJECT_NAME: str | None = None
 

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "android_settings_wifi_002",
+    "platform": "android",
+    "goal": "Open Settings and report the current Wi-Fi state.",
+    "locked_app_package": "com.android.settings",
+    "reset_command": "powershell -File benchmarks/mobileuse/resets/reset_settings.ps1",
+    "verifier_command": "uv run python benchmarks/mobileuse/verifiers/android_settings.py --expected wifi",
+    "timeout_seconds": 180,
+    "max_steps": 80
+  },
+  {
+    "id": "android_calculator_multiplication_001",
+    "platform": "android",
+    "goal": "Open Calculator and compute 9 * 3.",
+    "locked_app_package": "com.google.android.calculator",
+    "reset_command": "powershell -File benchmarks/mobileuse/resets/reset_calculator.ps1",
+    "verifier_command": "uv run python benchmarks/mobileuse/verifiers/android_calculator.py 27",
+    "timeout_seconds": 120,
+    "max_steps": 80
+  }
+]

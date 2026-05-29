@@ -1,0 +1,12 @@
+env: mobileuse
+train:
+  items: benchmarks/mobileuse/train/items.json
+val:
+  items: benchmarks/mobileuse/val/items.json
+test:
+  items: benchmarks/mobileuse/test/items.json
+skill_path: optimized-skills/best_skill.md
+trace_dir: outputs/mobileuse_run
+workers: 1
+batch_size: 3
+num_epochs: 2

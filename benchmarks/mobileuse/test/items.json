@@ -1,0 +1,22 @@
+[
+  {
+    "id": "android_settings_storage_002",
+    "platform": "android",
+    "goal": "Open Settings and open storage settings.",
+    "locked_app_package": "com.android.settings",
+    "reset_command": "powershell -File benchmarks/mobileuse/resets/reset_settings.ps1",
+    "verifier_command": "uv run python benchmarks/mobileuse/verifiers/android_settings.py --expected storage",
+    "timeout_seconds": 180,
+    "max_steps": 80
+  },
+  {
+    "id": "android_clock_alarm_001",
+    "platform": "android",
+    "goal": "Open Clock and show the alarm screen.",
+    "locked_app_package": "com.google.android.deskclock",
+    "reset_command": "powershell -File benchmarks/mobileuse/resets/reset_settings.ps1",
+    "verifier_command": "uv run python benchmarks/mobileuse/verifiers/android_settings.py --expected clock",
+    "timeout_seconds": 180,
+    "max_steps": 80
+  }
+]

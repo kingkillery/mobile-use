@@ -10,6 +10,7 @@ from minitap.mobile_use.controllers.platform_specific_commands_controller import
     get_current_foreground_package_async,
 )
 from minitap.mobile_use.graph.state import State
+from minitap.mobile_use.skills.loader import build_agent_skill_appendix
 from minitap.mobile_use.services.llm import get_llm, invoke_llm_with_timeout_message, with_fallback
 from minitap.mobile_use.tools.index import (
     EXECUTOR_WRAPPERS_TOOLS,
@@ -45,6 +46,7 @@ class PlannerNode:
 
         system_message = Template(
             Path(__file__).parent.joinpath("planner.md").read_text(encoding="utf-8")
+            + build_agent_skill_appendix("planner")
         ).render(
             platform=self.ctx.device.mobile_platform.value,
             executor_tools_list=format_tools_list(ctx=self.ctx, wrappers=executor_wrappers),
