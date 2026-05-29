@@ -8,11 +8,23 @@ import re
 from pathlib import Path
 
 
-PASS_PHRASES = {
-    "battery": ["battery", "battery level"],
-    "wifi": ["wi-fi", "wifi", "wireless"],
-    "storage": ["storage", "memory"],
-    "clock": ["clock", "alarm", "timer"],
+PASS_PATTERNS = {
+    "battery": [
+        r"battery level\s+(?:is|:)\s*\d+%",
+        r"successfully identified the battery level",
+    ],
+    "wifi": [
+        r"(?:opened|open|on|showing).{0,80}wi-?fi.{0,40}(?:page|screen|settings)",
+        r"goals completion reason:.{0,120}wi-?fi",
+    ],
+    "storage": [
+        r"(?:opened|open|on|showing).{0,80}storage.{0,40}(?:page|screen|settings)",
+        r"goals completion reason:.{0,120}storage",
+    ],
+    "clock": [
+        r"(?:opened|open|on|showing).{0,80}(?:timer|timers|clock).{0,40}(?:page|screen)",
+        r"goals completion reason:.{0,120}(?:timer|timers|clock)",
+    ],
 }
 
 
@@ -34,9 +46,9 @@ def _load_steps(trace_path: Path) -> list[str]:
 
 
 def _contains_expected(steps: list[str], expected: str) -> bool:
-    phrases = PASS_PHRASES.get(expected.lower(), [expected.lower()])
     content = " ".join(steps).lower()
-    return any(phrase in content for phrase in phrases)
+    patterns = PASS_PATTERNS.get(expected.lower(), [re.escape(expected.lower())])
+    return any(re.search(pattern, content, flags=re.IGNORECASE | re.DOTALL) for pattern in patterns)
 
 
 def verify(trace_path: Path, expected: str) -> tuple[bool, float, str]:
@@ -49,11 +61,6 @@ def verify(trace_path: Path, expected: str) -> tuple[bool, float, str]:
 
     if _contains_expected(steps, expected):
         return True, 1.0, f"Observed expected signal for '{expected}' in agent trace"
-
-    # fallback heuristic for calculator-like text captured in steps
-    if expected == "clock":
-        if re.search(r"\balarm\b|timer", " ".join(steps), flags=re.IGNORECASE):
-            return True, 0.6, "Fallback match for clock text"
 
     return False, 0.0, f"Could not find '{expected}' intent in trace payload"
 

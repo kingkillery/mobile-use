@@ -15,6 +15,7 @@ def main() -> None:
 
     if not args.source.exists():
         raise FileNotFoundError(f"Source skill not found: {args.source}")
+    args.target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(args.source, args.target)
     print(f"Promoted {args.source} -> {args.target}")
 

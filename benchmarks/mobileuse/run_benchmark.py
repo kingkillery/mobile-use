@@ -12,15 +12,13 @@ import argparse
 import asyncio
 import json
 import os
+import shutil
 import shlex
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from minitap.mobile_use.sdk.agent import Agent
-
-
-ROOT_DIR = Path(__file__).resolve().parents[1]
+ROOT_DIR = Path(__file__).resolve().parents[2]
 
 
 @dataclass
@@ -35,7 +33,7 @@ class BenchmarkItem:
     max_steps: int
 
     @classmethod
-    def from_dict(cls, value: dict) -> "BenchmarkItem":
+    def from_dict(cls, value: dict) -> BenchmarkItem:
         return cls(
             id=value["id"],
             platform=value["platform"],
@@ -48,11 +46,55 @@ class BenchmarkItem:
         )
 
 
+def _validate_command(command: str, cwd: Path) -> bool:
+    if not command:
+        return True
+    try:
+        parts = shlex.split(command, posix=False)
+    except ValueError:
+        return False
+    if not parts:
+        return True
+    exe = parts[0]
+    if exe.lower() in {"powershell", "python", "uv"}:
+        return True
+    return shutil.which(exe) is not None or (cwd / exe).exists()
+
+
 def _load_items(path: Path) -> list[BenchmarkItem]:
     if not path.exists():
         raise FileNotFoundError(f"Benchmark file missing: {path}")
     payload = json.loads(path.read_text(encoding="utf-8"))
     return [BenchmarkItem.from_dict(item) for item in payload]
+
+
+def _validate_items(items: list[BenchmarkItem], cwd: Path) -> list[dict]:
+    results = []
+    for item in items:
+        issues: list[str] = []
+        if not item.id:
+            issues.append("missing id")
+        if not item.platform:
+            issues.append("missing platform")
+        if item.platform.lower() != "android":
+            issues.append(f"unsupported platform: {item.platform}")
+        if not item.goal:
+            issues.append("missing goal")
+        if not item.locked_app_package:
+            issues.append("missing locked_app_package")
+        if not _validate_command(item.reset_command, cwd):
+            issues.append("reset command appears invalid")
+        if not _validate_command(item.verifier_command, cwd):
+            issues.append("verifier command appears invalid")
+
+        results.append(
+            {
+                "id": item.id,
+                "valid": len(issues) == 0,
+                "issues": issues,
+            }
+        )
+    return results
 
 
 def _run_reset(command: str, timeout_seconds: int = 120) -> tuple[int, str, str]:
@@ -74,8 +116,9 @@ def _run_verifier(command: str, trace_path: Path) -> tuple[bool, float, str]:
     if not command:
         return False, 0.0, "Verifier command not configured"
 
+    has_trace_placeholder = "{trace_path}" in command
     command = command.replace("{trace_path}", str(trace_path))
-    if "{trace_path}" not in command and "trace_path" not in command:
+    if not has_trace_placeholder:
         command = f"{command} {trace_path}"
     parts = shlex.split(command, posix=False)
     proc = subprocess.run(
@@ -161,32 +204,33 @@ async def run_item(item: BenchmarkItem | dict, skill_path: str | None, trace_roo
     run_dir = trace_root
     run_name = item_obj.id
 
-    agent = Agent()
-    await agent.init()
-    task_request = (
-        agent.new_task(item_obj.goal)
-        .with_name(run_name)
-        .with_locked_app_package(item_obj.locked_app_package)
-        .with_max_steps(item_obj.max_steps)
-        .with_trace_recording(True, str(run_dir))
-        .with_thoughts_output_saving(str(run_dir / item_obj.id / "thoughts.json"))
-    )
-
     fail_reason = ""
     task_failed = False
-    await_start = asyncio.wait_for(
-        agent.run_task(request=task_request.build()),
-        timeout=item_obj.timeout_seconds,
-    )
+    from minitap.mobile_use.sdk.agent import Agent
 
+    agent = Agent()
     try:
-        await await_start
-    except asyncio.TimeoutError:
+        await agent.init()
+        task_request = (
+            agent.new_task(item_obj.goal)
+            .with_name(run_name)
+            .with_locked_app_package(item_obj.locked_app_package)
+            .with_max_steps(item_obj.max_steps)
+            .with_trace_recording(True, str(run_dir))
+            .with_thoughts_output_saving(str(run_dir / item_obj.id / "thoughts.json"))
+        )
+        await asyncio.wait_for(
+            agent.run_task(request=task_request.build()),
+            timeout=item_obj.timeout_seconds,
+        )
+    except TimeoutError:
         fail_reason = f"Task timeout after {item_obj.timeout_seconds}s"
         task_failed = True
     except Exception as exc:
         fail_reason = f"task failed: {exc}"
         task_failed = True
+    finally:
+        await agent.clean()
 
     trace_path = _find_trace_folder(run_dir, run_name)
     thoughts_path = run_dir / run_name / "thoughts.json"
@@ -226,13 +270,32 @@ def main() -> None:
     parser.add_argument("--split", default="train", choices=["train", "val", "test"])
     parser.add_argument("--items", default="")
     parser.add_argument("--skill-path", default=None)
+    parser.add_argument(
+        "--validate-only",
+        action="store_true",
+        help="Validate benchmark items and commands only; do not connect a device.",
+    )
     parser.add_argument("--trace-root", default="outputs/mobileuse_run/traces")
     parser.add_argument("--results-output", default="outputs/mobileuse_run/results.json")
     args = parser.parse_args()
 
-    items_path = Path(args.items) if args.items else ROOT_DIR / "benchmarks/mobileuse" / args.split / "items.json"
-    traces_root = Path(args.trace_root)
-    results = asyncio.run(run_split(items_path=items_path, skill_path=args.skill_path, traces_root=traces_root))
+    items_path = (
+        Path(args.items)
+        if args.items
+        else ROOT_DIR / "benchmarks/mobileuse" / args.split / "items.json"
+    )
+    if args.validate_only:
+        items = _load_items(items_path)
+        results = _validate_items(items=items, cwd=ROOT_DIR)
+    else:
+        traces_root = Path(args.trace_root)
+        results = asyncio.run(
+            run_split(
+                items_path=items_path,
+                skill_path=args.skill_path,
+                traces_root=traces_root,
+            )
+        )
 
     output_path = Path(args.results_output)
     output_path.parent.mkdir(parents=True, exist_ok=True)

@@ -30,9 +30,6 @@ def _extract_result(steps: list[str]) -> str | None:
     match = re.search(r"(?i)result\\s*[:=]\\s*(-?\\d+)", content)
     if match:
         return match.group(1)
-    match = re.search(r"(-?\\d+)", content)
-    if match:
-        return match.group(1)
     return None
 
 
@@ -44,9 +41,15 @@ def verify(trace_path: Path, expected: str) -> tuple[bool, float, str]:
     if not steps:
         return False, 0.0, "No steps.json found in trace folder"
 
+    content = "\n".join(steps)
     result = _extract_result(steps)
     if result is None:
-        return False, 0.0, "No numeric result found in trace"
+        expected_pattern = (
+            rf"(?i)(?:computed|equals|answer|result).{{0,80}}\b{re.escape(expected)}\b"
+        )
+        if re.search(expected_pattern, content):
+            return True, 0.8, f"Expected calculator result {expected} found in trace context"
+        return False, 0.0, "No calculator result found in trace"
 
     if result == expected:
         return True, 1.0, f"Expected calculator result {expected} found: {result}"
