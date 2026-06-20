@@ -3,60 +3,60 @@
   "default": {
     "planner": {
       "provider": "llm",
-      "model": "deepseek/deepseek-v4-flash",
+      "model": "openrouter/deepseek/deepseek-v4-flash",
       "fallback": {
         "provider": "llm",
-        "model": "deepseek/deepseek-v4-flash"
+        "model": "openrouter/deepseek/deepseek-v4-flash"
       }
     },
     "orchestrator": {
       "provider": "llm",
-      "model": "deepseek/deepseek-v4-flash",
+      "model": "openrouter/deepseek/deepseek-v4-flash",
       "fallback": {
         "provider": "llm",
-        "model": "deepseek/deepseek-v4-flash"
+        "model": "openrouter/deepseek/deepseek-v4-flash"
       }
     },
     "cortex": {
       "provider": "llm",
-      "model": "deepseek/deepseek-v4-flash",
+      "model": "openrouter/deepseek/deepseek-v4-flash",
       "fallback": {
         "provider": "llm",
-        "model": "deepseek/deepseek-v4-flash"
+        "model": "openrouter/deepseek/deepseek-v4-flash"
       }
     },
     "executor": {
       "provider": "llm",
-      "model": "deepseek/deepseek-v4-flash",
+      "model": "openrouter/deepseek/deepseek-v4-flash",
       "fallback": {
         "provider": "llm",
-        "model": "deepseek/deepseek-v4-flash"
+        "model": "openrouter/deepseek/deepseek-v4-flash"
       }
     },
     "contextor": {
       "provider": "llm",
-      "model": "deepseek/deepseek-v4-flash",
+      "model": "openrouter/deepseek/deepseek-v4-flash",
       "fallback": {
         "provider": "llm",
-        "model": "deepseek/deepseek-v4-flash"
+        "model": "openrouter/deepseek/deepseek-v4-flash"
       }
     },
     "utils": {
       "hopper": {
         // Needs at least a 256k context window.
         "provider": "llm",
-        "model": "deepseek/deepseek-v4-flash",
+        "model": "openrouter/deepseek/deepseek-v4-flash",
         "fallback": {
           "provider": "llm",
-          "model": "deepseek/deepseek-v4-flash"
+          "model": "openrouter/deepseek/deepseek-v4-flash"
         }
       },
       "outputter": {
         "provider": "llm",
-        "model": "deepseek/deepseek-v4-flash",
+        "model": "openrouter/deepseek/deepseek-v4-flash",
         "fallback": {
           "provider": "llm",
-          "model": "deepseek/deepseek-v4-flash"
+          "model": "openrouter/deepseek/deepseek-v4-flash"
         }
       }
       // video_analyzer is optional - only needed when using video recording tools

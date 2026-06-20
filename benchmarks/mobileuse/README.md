@@ -41,8 +41,21 @@ Configured in `skillopt_mobileuse/configs/mobileuse/default.yaml` with:
 - `batch_size: 3`
 - `num_epochs: 2`
 
+Run the optimizer:
+
+```powershell
+uv run python benchmarks/mobileuse/run_optimization.py --config skillopt_mobileuse/configs/mobileuse/default.yaml --dry-run
+uv run python benchmarks/mobileuse/run_optimization.py --config skillopt_mobileuse/configs/mobileuse/default.yaml --output-dir outputs/mobileuse_opt
+```
+
 Promotion to `optimized-skills/best_skill.md` is manual:
 
 ```powershell
 uv run python benchmarks/mobileuse/promote_skill.py optimized-skills/mobileuse-cortex-v002.md
+```
+
+To include scoring metadata in the promoted file:
+
+```powershell
+uv run python benchmarks/mobileuse/promote_skill.py optimized-skills/mobileuse-cortex-v002.md --baseline-score 0.42 --val-score 0.68 --test-score 0.61
 ```

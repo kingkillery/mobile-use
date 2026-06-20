@@ -85,7 +85,7 @@ Follow our [Platform quickstart](https://docs.minitap.ai/mobile-use-sdk/platform
     You can also use local LLMs or any other openai-api compatible providers :
 
     1. Set `LLM_API_KEY` (or `OPEN_ROUTER_API_KEY`) in your `.env`
-    2. In your `llm-config.override.jsonc`, set provider to `llm` for the agent nodes you want, and use DeepSeek model IDs (for example `deepseek/deepseek-v4-flash`).
+    2. In your `llm-config.override.jsonc`, set provider to `llm` for the agent nodes you want, and use DeepSeek model IDs available in llm (for example `openrouter/deepseek/deepseek-v4-flash`).
 
     > [!NOTE]
     > If you want to use Google Vertex AI, you must either:

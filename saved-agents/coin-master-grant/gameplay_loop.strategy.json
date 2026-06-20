@@ -1,0 +1,62 @@
+{
+  "screen_width": 1080,
+  "screen_height": 2424,
+  "image_width": 480,
+  "vision_model": "minimax/minimax-m3",
+  "optimizer_model": "openai/gpt-oss-120b:nitro",
+  "vision_max_tokens": 500,
+  "optimizer_max_tokens": 1200,
+  "llm_timeout_seconds": 90,
+  "roll_cooldown_ms": 2500,
+  "build_tap_cooldown_ms": 1800,
+  "modal_close_cooldown_ms": 1200,
+  "claim_cooldown_ms": 1500,
+  "poll_ms": 2500,
+  "effectiveness_diff_threshold": 0.006,
+  "stuck_repeat_count": 3,
+  "optimizer_interval_seconds": 300,
+  "effectiveness_interval_seconds": 180,
+  "unsafe_keywords": [
+    "sign in",
+    "log in",
+    "subscribe",
+    "survey",
+    "verify identity",
+    "enter password",
+    "credit card",
+    "billing",
+    "payment method"
+  ],
+  "purchase_keywords": [
+    "more coins",
+    "$",
+    "purchase",
+    "buy",
+    "3.99"
+  ],
+  "dice_center": [540, 2180],
+  "card_centers": [
+    [108, 2137],
+    [324, 2137],
+    [540, 2137],
+    [756, 2137],
+    [972, 2137]
+  ],
+  "claim_button": [640, 380],
+  "purchase_close": [960, 300],
+  "close_top_right": [980, 115],
+  "ok_center": [540, 1450],
+  "raid_holes": [
+    [270, 900],
+    [540, 700],
+    [810, 900]
+  ],
+  "build_open_swipe": [
+    [540, 1800],
+    [540, 2400]
+  ],
+  "continue_button": [540, 2200],
+  "back_key_for_purchase": true,
+  "build_icon": [129, 2278],
+  "vision_prompt": "You are the fast action brain for a Coin Master Board Adventure ADB bot. Screen 1080x2424 portrait. Output ONLY JSON: {\"action\":\"roll|build|claim|close|attack|wait\",\"x\":0.0-1.0,\"y\":0.0-1.0}. roll=large red dice button at bottom center if energy>0 and button does NOT say STOP. build=cheapest affordable build card when bottom build panel with green price bars is open; if panel is closed but you have coins, tap the crown/hammer icon at bottom-left to open it. claim=green CLAIM button or reward scroll/checkmark. close=tap X/close/continue of a modal, especially purchase modals with $/prices or a raid result screen after bags are opened. attack=tap an unopened red raid bag/hole during attack/raid (ignore bags already showing a yellow X). wait=do nothing. Priority: 1) close $ modals and finished raid screens, 2) claim rewards, 3) build if panel open, 4) roll if energy>0, 5) attack if raid bags available, 6) wait. Never purchase, never tap auth/sign-in. Return JSON only."
+}
